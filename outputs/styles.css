@@ -188,3 +188,13 @@ html,html body,html .site-header,html .mobile-menu,html .marquee,html .chair-sec
 @media(max-width:640px){.theme-toggle{width:40px;height:40px;flex-basis:40px;margin-left:auto;margin-right:9px}.site-header{gap:8px}}
 .submit-button{min-width:185px}.button-label,.button-loading-label{align-items:center;gap:12px}.button-label{display:inline-flex}.button-loading-label{display:none}.button-label i{font-style:normal;font-size:16px}.button-spinner{display:none;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:submit-spin .7s linear infinite}.is-sending .button-spinner{display:inline-block}.is-sending .button-label{display:none}.is-sending .button-loading-label{display:inline-flex}.submit-button:disabled{opacity:.76;cursor:wait;transform:none}.form-feedback.is-error{color:#d47b7b}html[data-theme="light"] .form-feedback.is-error{color:#b42318}.confirm-done{margin-top:14px}@keyframes submit-spin{to{transform:rotate(360deg)}}
 @media(max-width:640px){.submit-button{min-width:0}}
+.success-overlay{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:#050506b8;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .36s ease,visibility 0s linear .36s}
+.success-overlay[hidden]{display:none!important}
+.success-overlay.is-visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .36s ease,visibility 0s}
+body.has-success-overlay{overflow:hidden}
+.success-overlay .confirm-dialog{opacity:0;transform:translateY(10px) scale(.985);transition:opacity .36s ease,transform .36s cubic-bezier(.2,.7,.2,1)}
+.success-overlay.is-visible .confirm-dialog{opacity:1;transform:translateY(0) scale(1)}
+.success-overlay .confirm-symbol{color:#b3dfc0;border-color:#649274;background:#31523a55;box-shadow:0 0 24px #63bd7b18;font-size:21px}
+html[data-theme="light"] .success-overlay{background:#20262c71}
+html[data-theme="light"] .success-overlay .confirm-symbol{color:#167344;border-color:#85b89a;background:#e8f6ed;box-shadow:0 0 24px #16734414}
+@media(prefers-reduced-motion:reduce){.success-overlay,.success-overlay .confirm-dialog{transition-duration:.01ms}}

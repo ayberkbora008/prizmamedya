@@ -18,9 +18,28 @@ document.querySelector('.dialog-close').addEventListener('click',()=>chairDialog
 chairDialog.addEventListener('click',event=>{if(event.target===chairDialog)chairDialog.close();});
 
 const form=document.querySelector('#apply-form');
-const confirmDialog=document.querySelector('.confirm-dialog');
-document.querySelector('.confirm-close').addEventListener('click',()=>confirmDialog.close());
-document.querySelector('.confirm-done').addEventListener('click',()=>confirmDialog.close());
+const successOverlay=document.querySelector('.success-overlay');
+const successPanel=successOverlay.querySelector('.confirm-dialog');
+let successCloseTimer;
+let successHideTimer;
+function closeSuccessNotice(){
+  if(successOverlay.hidden)return;
+  window.clearTimeout(successCloseTimer);window.clearTimeout(successHideTimer);
+  successOverlay.classList.remove('is-visible');successOverlay.setAttribute('aria-hidden','true');
+  document.body.classList.remove('has-success-overlay');
+  successHideTimer=window.setTimeout(()=>{successOverlay.hidden=true;},360);
+}
+function showSuccessNotice(){
+  window.clearTimeout(successCloseTimer);window.clearTimeout(successHideTimer);
+  successOverlay.hidden=false;successOverlay.setAttribute('aria-hidden','false');
+  document.body.classList.add('has-success-overlay');
+  requestAnimationFrame(()=>{successOverlay.classList.add('is-visible');successPanel.focus();});
+  successCloseTimer=window.setTimeout(closeSuccessNotice,2800);
+}
+successOverlay.querySelector('.confirm-close').addEventListener('click',closeSuccessNotice);
+successOverlay.querySelector('.confirm-done').addEventListener('click',closeSuccessNotice);
+successOverlay.addEventListener('click',event=>{if(event.target===successOverlay)closeSuccessNotice();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!successOverlay.hidden)closeSuccessNotice();});
 form.addEventListener('submit',async event=>{
   event.preventDefault();
   const feedback=form.querySelector('.form-feedback');
@@ -29,15 +48,18 @@ form.addEventListener('submit',async event=>{
   const button=form.querySelector('.submit-button');
   feedback.textContent='';feedback.classList.remove('is-error');
   button.disabled=true;button.setAttribute('aria-busy','true');form.classList.add('is-sending');
+  const controller=new AbortController();
+  const requestTimeout=window.setTimeout(()=>controller.abort(),25000);
   try{
-    const response=await fetch('/api/applications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    const response=await fetch('/api/applications',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data),signal:controller.signal});
     const result=await response.json().catch(()=>({}));
     if(!response.ok)throw new Error(result.error||'Başvuru gönderilemedi. Lütfen bilgilerinizi kontrol edip tekrar deneyin.');
-    form.reset();feedback.textContent='';confirmDialog.showModal();
+    form.reset();feedback.textContent='';showSuccessNotice();
   }catch(error){
-    feedback.textContent=error.message||'Başvuru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.';
+    feedback.textContent=error.name==='AbortError'?'İstek zaman aşımına uğradı. Lütfen tekrar deneyin.':(error.message||'Başvuru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
     feedback.classList.add('is-error');
   }finally{
+    window.clearTimeout(requestTimeout);
     button.disabled=false;button.removeAttribute('aria-busy');form.classList.remove('is-sending');
   }
 });
